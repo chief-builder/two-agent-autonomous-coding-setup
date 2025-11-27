@@ -1,0 +1,36 @@
+{
+  "name": "two-agent-autonomous-coding-setup",
+  "version": "1.0.0",
+  "description": "A minimal demonstration of extended autonomous coding using the Claude Agent SDK with a two-agent pattern",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "autonomous-agent": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "claude",
+    "ai",
+    "agent",
+    "autonomous",
+    "coding"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.1.0",
+    "commander": "^12.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -1,0 +1,199 @@
+# Task Management Application Specification
+
+## Overview
+
+Build a full-featured task management web application with a clean, modern interface. The application should support task creation, organization, collaboration, and progress tracking.
+
+## Technology Stack
+
+### Frontend
+- React 18 with Vite
+- Tailwind CSS for styling
+- React Router for navigation
+- Zustand for state management
+
+### Backend
+- Node.js with Express
+- SQLite database with better-sqlite3
+- RESTful API design
+
+### Development
+- Port 3000 for frontend (Vite dev server)
+- Port 3001 for backend API
+- Hot module reloading enabled
+
+## Core Features
+
+### 1. Task Management
+- Create, read, update, delete tasks
+- Task title (required, max 200 characters)
+- Task description (optional, supports markdown)
+- Due date with date picker
+- Priority levels: Low, Medium, High, Urgent
+- Status: Todo, In Progress, Done, Archived
+- Tags/labels with color coding
+- Subtasks with completion tracking
+- Task attachments (file upload)
+
+### 2. Organization
+- Projects to group related tasks
+- Folders within projects
+- Drag-and-drop task reordering
+- Bulk task operations (move, delete, update status)
+- Filter by status, priority, due date, tags
+- Sort by various fields
+- Search across all tasks
+
+### 3. User Interface
+- Clean, minimal design
+- Dark and light theme support
+- Responsive layout (mobile, tablet, desktop)
+- Sidebar navigation
+- Quick-add task button
+- Keyboard shortcuts (n: new task, /: search, etc.)
+- Toast notifications for actions
+- Confirmation dialogs for destructive actions
+
+### 4. Views
+- List view (default)
+- Kanban board view
+- Calendar view for due dates
+- Dashboard with statistics
+- Activity feed/history
+
+### 5. Data Persistence
+- SQLite database for all data
+- Auto-save on changes
+- Export tasks to JSON/CSV
+- Import from JSON
+
+## Database Schema
+
+### tasks
+- id: INTEGER PRIMARY KEY
+- title: TEXT NOT NULL
+- description: TEXT
+- status: TEXT DEFAULT 'todo'
+- priority: TEXT DEFAULT 'medium'
+- due_date: DATETIME
+- project_id: INTEGER FOREIGN KEY
+- parent_task_id: INTEGER (for subtasks)
+- position: INTEGER (for ordering)
+- created_at: DATETIME
+- updated_at: DATETIME
+
+### projects
+- id: INTEGER PRIMARY KEY
+- name: TEXT NOT NULL
+- description: TEXT
+- color: TEXT
+- created_at: DATETIME
+- updated_at: DATETIME
+
+### tags
+- id: INTEGER PRIMARY KEY
+- name: TEXT NOT NULL
+- color: TEXT
+- created_at: DATETIME
+
+### task_tags (junction table)
+- task_id: INTEGER FOREIGN KEY
+- tag_id: INTEGER FOREIGN KEY
+
+## API Endpoints
+
+### Tasks
+- GET /api/tasks - List all tasks (with filters)
+- GET /api/tasks/:id - Get single task
+- POST /api/tasks - Create task
+- PUT /api/tasks/:id - Update task
+- DELETE /api/tasks/:id - Delete task
+- PATCH /api/tasks/:id/status - Update task status
+- POST /api/tasks/:id/subtasks - Add subtask
+
+### Projects
+- GET /api/projects - List all projects
+- GET /api/projects/:id - Get project with tasks
+- POST /api/projects - Create project
+- PUT /api/projects/:id - Update project
+- DELETE /api/projects/:id - Delete project
+
+### Tags
+- GET /api/tags - List all tags
+- POST /api/tags - Create tag
+- DELETE /api/tags/:id - Delete tag
+
+### Utility
+- GET /api/stats - Dashboard statistics
+- POST /api/export - Export data
+- POST /api/import - Import data
+
+## UI/UX Requirements
+
+### Layout
+- Collapsible sidebar (280px width)
+- Main content area
+- Optional right panel for task details
+- Fixed header with search and actions
+
+### Colors (Light Theme)
+- Background: #FFFFFF
+- Sidebar: #F8F9FA
+- Primary accent: #3B82F6 (blue)
+- Success: #10B981 (green)
+- Warning: #F59E0B (amber)
+- Danger: #EF4444 (red)
+- Text: #1F2937
+
+### Colors (Dark Theme)
+- Background: #1F2937
+- Sidebar: #111827
+- Primary accent: #60A5FA
+- Text: #F9FAFB
+
+### Typography
+- Font family: Inter, system-ui, sans-serif
+- Heading sizes: 24px, 20px, 16px
+- Body text: 14px
+- Small text: 12px
+
+### Interactions
+- Hover states on all interactive elements
+- Focus rings for accessibility
+- Smooth transitions (150ms ease)
+- Loading spinners for async operations
+- Skeleton loaders for initial load
+
+## Accessibility
+
+- Semantic HTML elements
+- ARIA labels where needed
+- Keyboard navigation support
+- Focus management
+- Color contrast compliance (WCAG AA)
+- Screen reader compatible
+
+## Performance
+
+- Lazy loading for views
+- Debounced search input
+- Optimistic UI updates
+- Efficient re-renders with React.memo
+
+## Error Handling
+
+- Form validation with helpful messages
+- API error handling with user-friendly messages
+- Offline indicator
+- Retry mechanisms for failed requests
+
+## Success Criteria
+
+1. All CRUD operations work correctly
+2. UI is responsive across device sizes
+3. Theme switching works without flash
+4. Keyboard shortcuts function properly
+5. Data persists correctly in SQLite
+6. No console errors in normal operation
+7. Smooth animations and transitions
+8. Accessible to screen readers
