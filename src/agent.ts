@@ -161,17 +161,25 @@ async function runAgentSession(
  *
  * Creates the project directory, copies the app spec, and sets up settings.
  */
-async function initializeProject(projectDir: string): Promise<void> {
+async function initializeProject(projectDir: string, customSpecFile?: string): Promise<void> {
   // Create project directory if it doesn't exist
   await mkdir(projectDir, { recursive: true });
 
-  // Copy the app spec to the project directory
-  const appSpecSource = getPromptPath('app_spec.txt');
+  // Determine the source for app_spec.txt
+  const appSpecSource = customSpecFile || getPromptPath('app_spec.txt');
   const appSpecDest = join(projectDir, 'app_spec.txt');
 
   if (await exists(appSpecSource)) {
     await copyFile(appSpecSource, appSpecDest);
-    printInfo(`Copied app_spec.txt to ${projectDir}`);
+    const specName = customSpecFile ? customSpecFile : 'app_spec.txt';
+    printInfo(`Copied ${specName} to ${projectDir}`);
+  } else if (customSpecFile) {
+    printWarning(`Custom spec file not found: ${customSpecFile}`);
+    printInfo('Falling back to default app_spec.txt');
+    const defaultSpec = getPromptPath('app_spec.txt');
+    if (await exists(defaultSpec)) {
+      await copyFile(defaultSpec, appSpecDest);
+    }
   }
 
   // Initialize Claude settings
@@ -194,7 +202,7 @@ async function isFirstRun(projectDir: string): Promise<boolean> {
  * 2. Subsequent sessions: Run coding agent to implement features
  */
 export async function runAutonomousAgent(config: AgentConfig): Promise<void> {
-  const { projectDir, model, maxIterations } = config;
+  const { projectDir, model, maxIterations, specFile } = config;
   const absoluteProjectDir = resolve(projectDir);
 
   let sessionNum = 1;
@@ -203,7 +211,7 @@ export async function runAutonomousAgent(config: AgentConfig): Promise<void> {
   // Initialize project on first run
   if (isFirstSession) {
     printInfo('Initializing new project...');
-    await initializeProject(absoluteProjectDir);
+    await initializeProject(absoluteProjectDir, specFile);
   } else {
     printInfo('Resuming existing project...');
   }

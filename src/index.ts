@@ -28,9 +28,19 @@ const DEFAULT_MODEL = 'claude-sonnet-4-5-20250929';
 const GENERATIONS_DIR = 'generations';
 
 /**
+ * CLI arguments interface
+ */
+interface CLIArgs {
+  projectDir: string;
+  maxIterations?: number;
+  model: string;
+  specFile?: string;
+}
+
+/**
  * Parse command line arguments
  */
-function parseArgs(): { projectDir: string; maxIterations?: number; model: string } {
+function parseArgs(): CLIArgs {
   const program = new Command();
 
   program
@@ -44,7 +54,8 @@ function parseArgs(): { projectDir: string; maxIterations?: number; model: strin
         '  ANTHROPIC_API_KEY    Required. Your Anthropic API key.\n\n' +
         'Examples:\n' +
         '  npx tsx src/index.ts --project-dir ./my_project\n' +
-        '  npm run dev -- --project-dir ./my_project --max-iterations 10'
+        '  npm run dev -- --project-dir ./my_project --max-iterations 10\n' +
+        '  npm run dev -- -p ./counter-app -s prompts/simple_counter_spec.txt -m 3'
     )
     .version('1.0.0')
     .option(
@@ -62,6 +73,10 @@ function parseArgs(): { projectDir: string; maxIterations?: number; model: strin
       'Claude model to use',
       DEFAULT_MODEL
     )
+    .option(
+      '-s, --spec <path>',
+      'Path to custom app specification file (default: prompts/app_spec.txt)'
+    )
     .parse();
 
   const options = program.opts();
@@ -70,6 +85,7 @@ function parseArgs(): { projectDir: string; maxIterations?: number; model: strin
     projectDir: options.projectDir as string,
     maxIterations: options.maxIterations as number | undefined,
     model: options.model as string,
+    specFile: options.spec as string | undefined,
   };
 }
 
@@ -149,6 +165,9 @@ async function main(): Promise<void> {
   // Setup graceful shutdown
   setupGracefulShutdown();
 
+  // Resolve spec file path if provided
+  const specFile = args.specFile ? resolve(process.cwd(), args.specFile) : undefined;
+
   // Print startup info
   console.log();
   console.log('╔════════════════════════════════════════════════════════════╗');
@@ -160,6 +179,9 @@ async function main(): Promise<void> {
   if (args.maxIterations) {
     printInfo(`Max iterations: ${args.maxIterations}`);
   }
+  if (specFile) {
+    printInfo(`App spec: ${specFile}`);
+  }
   console.log();
 
   try {
@@ -168,6 +190,7 @@ async function main(): Promise<void> {
       projectDir,
       model: args.model,
       maxIterations: args.maxIterations,
+      specFile,
     });
   } catch (error) {
     if (error instanceof Error && error.message.includes('SIGINT')) {

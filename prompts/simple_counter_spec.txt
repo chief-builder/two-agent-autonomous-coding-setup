@@ -1,0 +1,79 @@
+# Simple Counter Application
+
+## Overview
+Build a minimal counter web application with increment, decrement, and reset functionality.
+
+## Technology Stack
+- Vanilla HTML, CSS, JavaScript (no frameworks)
+- Single-page application
+- All code in one index.html file (inline styles and scripts)
+
+## Features
+
+### Core Features
+1. Display a counter value starting at 0
+2. Increment button (+) that increases counter by 1
+3. Decrement button (-) that decreases counter by 1
+4. Reset button that sets counter back to 0
+
+### Persistence
+5. Counter value persists in localStorage
+6. On page reload, counter restores to saved value
+
+### UI/UX
+7. Centered layout on the page
+8. Large, readable counter display (minimum 48px font)
+9. Clear, clickable buttons with hover states
+10. Responsive design (works on mobile)
+
+## File Structure
+```
+index.html    # Single file containing HTML, CSS, and JavaScript
+```
+
+## UI Requirements
+
+### Layout
+- Vertically and horizontally centered content
+- Counter display at top
+- Buttons in a row below the counter
+
+### Styling
+- Clean, minimal design
+- Primary color: #3B82F6 (blue) for increment
+- Danger color: #EF4444 (red) for decrement
+- Neutral color: #6B7280 (gray) for reset
+- White background, dark text
+- Rounded corners on buttons (8px)
+- Box shadow on counter display
+
+### Button States
+- Default: Solid color
+- Hover: Slightly darker shade
+- Active: Even darker, slight scale down
+- Disabled: Grayed out (if applicable)
+
+## Accessibility
+- Semantic HTML elements
+- ARIA labels on buttons
+- Keyboard navigation support (Tab, Enter, Space)
+- Focus visible states
+
+## Testing Checklist
+1. Counter starts at 0 on fresh load
+2. Increment adds 1 to counter
+3. Decrement subtracts 1 from counter
+4. Counter can go negative
+5. Reset sets counter to 0
+6. Value persists after page reload
+7. All buttons have hover effects
+8. Layout is centered on desktop
+9. Layout works on mobile viewport
+10. Keyboard navigation works
+
+## Success Criteria
+- All features functional
+- Clean, professional appearance
+- No console errors
+- Smooth interactions
+- Accessible to keyboard users

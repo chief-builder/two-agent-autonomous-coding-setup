@@ -14,7 +14,12 @@ Read `app_spec.txt` carefully to understand:
 
 ### 2. Create the Feature List
 
-Generate `feature_list.json` containing **at least 200 features total** with testing steps. This file becomes **the single source of truth** for progress tracking.
+Generate `feature_list.json` containing features based on the application complexity. This file becomes **the single source of truth** for progress tracking.
+
+**Feature count guidelines:**
+- Simple apps (counter, calculator): 5-15 features
+- Medium apps (todo list, blog): 20-50 features
+- Complex apps (full-stack with auth, DB): 100-200 features
 
 Structure the file as:
 
@@ -40,14 +45,14 @@ Structure the file as:
   "metadata": {
     "createdAt": "ISO timestamp",
     "lastUpdated": "ISO timestamp",
-    "totalFeatures": 5,
+    "totalFeatures": 0,
     "passingFeatures": 0
   }
 }
 ```
 
 **Important requirements:**
-- At least 25 features must have 10+ testing steps each
+- Each feature should have 3-10 testing steps (more for complex features)
 - All features start with `passes: false`
 - Features must be ordered by implementation priority (dependencies first)
 - Include a mix of functional, style, accessibility, and performance features
