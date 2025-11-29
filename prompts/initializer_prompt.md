@@ -40,7 +40,7 @@ Structure the file as:
   "metadata": {
     "createdAt": "ISO timestamp",
     "lastUpdated": "ISO timestamp",
-    "totalFeatures": 20,
+    "totalFeatures": 5,
     "passingFeatures": 0
   }
 }
