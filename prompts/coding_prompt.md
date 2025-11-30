@@ -13,7 +13,14 @@ cat app_spec.txt
 cat feature_list.json
 cat claude-progress.txt
 git log --oneline -10
+
+# Check for bug reports and issues
+cat BUG_REPORT.md 2>/dev/null || true
+cat BUGS.md 2>/dev/null || true
+ls -la *bug* *issue* *error* 2>/dev/null || true
 ```
+
+**Bug Report Priority**: If any bug reports exist, they take **highest priority** over new features. Fix all reported bugs before implementing new functionality.
 
 ### Step 2: Start Required Services
 
@@ -34,6 +41,34 @@ Wait for services to be ready before proceeding.
 4. Take a screenshot to verify
 
 If any previously passing feature is broken, fix it FIRST before new work.
+
+### Step 3.5: Fix Reported Bugs (If Any)
+
+If bug reports exist (BUG_REPORT.md, BUGS.md, etc.), address them immediately:
+
+1. **Read the bug report carefully** - Understand the reproduction steps
+2. **Reproduce the issue** - Use Puppeteer to verify the bug exists
+3. **Identify root cause** - Debug the code to find the issue
+4. **Implement the fix** - Make minimal, targeted changes
+5. **Verify the fix** - Test that the bug is resolved
+6. **Test for regressions** - Ensure fix didn't break other features
+7. **Update the bug report** - Mark as FIXED with explanation:
+
+```markdown
+## Status: FIXED ✓
+
+### Resolution
+- Root cause: [what caused the bug]
+- Fix applied: [what you changed]
+- Files modified: [list of files]
+- Verified: [how you tested the fix]
+```
+
+**Common bug patterns to check:**
+- **Streaming issues**: Duplicate events, event listener cleanup, buffer handling
+- **State management**: Race conditions, stale closures, incorrect updates
+- **API errors**: Missing error handling, timeout issues, parsing errors
+- **UI glitches**: Event propagation, CSS specificity, responsive breakpoints
 
 ### Step 4: Select Next Feature
 
@@ -123,11 +158,12 @@ Before the session ends:
 
 ## Critical Constraints
 
-1. **One feature at a time** - Complete one feature thoroughly rather than partially completing multiple
-2. **UI testing required** - Do not rely solely on API/curl testing; use Puppeteer for real browser verification
-3. **Visual verification** - Take screenshots to confirm visual appearance
-4. **Zero console errors** - Check browser console for JavaScript errors
-5. **Immutable feature list** - Only change the `passes` field, never remove or modify features
+1. **Bugs before features** - Fix all reported bugs before implementing new features
+2. **One feature at a time** - Complete one feature thoroughly rather than partially completing multiple
+3. **UI testing required** - Do not rely solely on API/curl testing; use Puppeteer for real browser verification
+4. **Visual verification** - Take screenshots to confirm visual appearance
+5. **Zero console errors** - Check browser console for JavaScript errors
+6. **Immutable feature list** - Only change the `passes` field, never remove or modify features
 
 ## Troubleshooting
 
@@ -139,9 +175,10 @@ Before the session ends:
 ## Progress Check
 
 At the end of each session, note:
+- Bugs fixed this session (if any)
 - Features completed this session
 - Current passing/total ratio
 - Blockers for next session
 - Recommended next features
 
-Remember: Quality over quantity. A fully working, tested feature is better than multiple broken ones.
+Remember: Quality over quantity. A fully working, tested feature is better than multiple broken ones. Always fix bugs before adding new features.
