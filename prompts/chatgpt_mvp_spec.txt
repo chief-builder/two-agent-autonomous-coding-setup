@@ -1,0 +1,122 @@
+# ChatGPT Clone - MVP Specification
+
+## Overview
+Build a minimal ChatGPT-like chat interface with streaming responses.
+
+## Technology Stack
+- **Frontend**: Next.js 14, React 18, Tailwind CSS
+- **Backend**: Next.js API Routes (no separate backend)
+- **Database**: SQLite (via better-sqlite3)
+- **LLM**: OpenAI API (GPT-4o-mini)
+- **Port**: 3000
+
+## Core Features (MVP Only)
+
+### 1. Chat Interface
+- Clean chat layout with message bubbles
+- User messages on right (blue background)
+- Assistant messages on left (gray background)
+- Auto-resize textarea input
+- Send button + Enter to send
+- Streaming responses with typing indicator
+
+### 2. Conversation Management
+- New chat button
+- Conversation list in sidebar
+- Auto-generate title from first message
+- Delete conversation
+- Switch between conversations
+
+### 3. Message Features
+- Markdown rendering
+- Code blocks with syntax highlighting
+- Copy code button
+- Stop generation button
+
+### 4. Basic Persistence
+- Save conversations to SQLite
+- Load conversation history
+- Persist across page reloads
+
+## Database Schema (SQLite)
+
+```sql
+CREATE TABLE conversations (
+  id TEXT PRIMARY KEY,
+  title TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE messages (
+  id TEXT PRIMARY KEY,
+  conversation_id TEXT NOT NULL,
+  role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
+  content TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE
+);
+```
+
+## API Routes
+
+- `GET /api/conversations` - List all conversations
+- `POST /api/conversations` - Create new conversation
+- `DELETE /api/conversations/[id]` - Delete conversation
+- `GET /api/conversations/[id]/messages` - Get messages
+- `POST /api/conversations/[id]/messages` - Send message (streaming)
+
+## UI Layout
+
+### Two-Column Layout
+1. **Sidebar** (240px)
+   - New Chat button
+   - Conversation list
+   - Each item: title + delete button
+
+2. **Main Area**
+   - Header with conversation title
+   - Message history (scrollable)
+   - Input area at bottom
+
+## Design
+
+### Colors
+- Background: #ffffff (light) / #1a1a2e (dark)
+- User message: #3b82f6
+- Assistant message: #f3f4f6
+- Text: #1f2937
+- Border: #e5e7eb
+
+### Typography
+- Font: Inter, system-ui
+- Body: 14px
+- Code: JetBrains Mono
+
+## Environment Variables
+
+```bash
+OPENAI_API_KEY=sk-...
+```
+
+## Success Criteria
+
+1. Can start new conversation
+2. Messages stream word-by-word
+3. Code blocks highlight correctly
+4. Conversations persist in SQLite
+5. Can switch between conversations
+6. Can delete conversations
+7. Responsive on mobile
+8. No console errors
+
+## NOT in MVP (Future Phases)
+
+- Authentication
+- Multiple LLM providers
+- Artifacts panel
+- Projects/folders
+- Image upload
+- Memory system
+- Usage tracking
+- Sharing
