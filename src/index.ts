@@ -50,8 +50,9 @@ function parseArgs(): CLIArgs {
         'This implements a two-agent pattern:\n' +
         '  1. Initializer Agent (Session 1): Creates feature_list.json with test cases\n' +
         '  2. Coding Agent (Sessions 2+): Implements features and marks them as passing\n\n' +
-        'Environment Variables:\n' +
-        '  ANTHROPIC_API_KEY    Required. Your Anthropic API key.\n\n' +
+        'Environment Variables (one required):\n' +
+        '  CLAUDE_CODE_OAUTH_TOKEN  For Claude MAX subscribers\n' +
+        '  ANTHROPIC_API_KEY        For API key users\n\n' +
         'Examples:\n' +
         '  npx tsx src/index.ts --project-dir ./my_project\n' +
         '  npm run dev -- --project-dir ./my_project --max-iterations 10\n' +
@@ -146,15 +147,22 @@ function setupGracefulShutdown(): void {
  * Main entry point
  */
 async function main(): Promise<void> {
-  // Check for API key
-  if (!process.env.ANTHROPIC_API_KEY) {
-    printError('ANTHROPIC_API_KEY environment variable is required');
-    console.log('\nSet your API key:');
+  // Check for authentication - support both OAuth token (MAX) and API key
+  const hasOAuthToken = !!process.env.CLAUDE_CODE_OAUTH_TOKEN;
+  const hasApiKey = !!process.env.ANTHROPIC_API_KEY;
+
+  if (!hasOAuthToken && !hasApiKey) {
+    printError('Authentication required: Set CLAUDE_CODE_OAUTH_TOKEN or ANTHROPIC_API_KEY');
+    console.log('\nFor Claude MAX subscribers:');
+    console.log('  export CLAUDE_CODE_OAUTH_TOKEN=your-oauth-token');
+    console.log('\nFor API key users:');
     console.log('  export ANTHROPIC_API_KEY=your-api-key');
     console.log('\nOr run with:');
-    console.log('  ANTHROPIC_API_KEY=your-api-key npm run dev -- --project-dir ./my_project');
+    console.log('  CLAUDE_CODE_OAUTH_TOKEN=token npm run dev -- --project-dir ./my_project');
     process.exit(1);
   }
+
+  const authMethod = hasOAuthToken ? 'OAuth (MAX)' : 'API Key';
 
   // Parse arguments
   const args = parseArgs();
@@ -176,6 +184,7 @@ async function main(): Promise<void> {
   console.log();
   printInfo(`Project directory: ${projectDir}`);
   printInfo(`Model: ${args.model}`);
+  printInfo(`Auth: ${authMethod}`);
   if (args.maxIterations) {
     printInfo(`Max iterations: ${args.maxIterations}`);
   }
