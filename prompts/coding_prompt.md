@@ -17,10 +17,16 @@ git log --oneline -10
 # Check for bug reports and issues
 cat BUG_REPORT.md 2>/dev/null || true
 cat BUGS.md 2>/dev/null || true
-ls -la *bug* *issue* *error* 2>/dev/null || true
+
+# Check for feature requests
+cat FEATURE_REQUEST.md 2>/dev/null || true
+cat FEATURES.md 2>/dev/null || true
 ```
 
-**Bug Report Priority**: If any bug reports exist, they take **highest priority** over new features. Fix all reported bugs before implementing new functionality.
+**Priority Order** (handle in this sequence):
+1. **Bug reports** (highest) - Fix broken things first
+2. **Feature requests** - Add user-requested features
+3. **Incomplete features** - Continue normal implementation
 
 ### Step 2: Start Required Services
 
@@ -69,6 +75,52 @@ If bug reports exist (BUG_REPORT.md, BUGS.md, etc.), address them immediately:
 - **State management**: Race conditions, stale closures, incorrect updates
 - **API errors**: Missing error handling, timeout issues, parsing errors
 - **UI glitches**: Event propagation, CSS specificity, responsive breakpoints
+
+### Step 3.6: Process Feature Requests (If Any)
+
+If feature request files exist (FEATURE_REQUEST.md, FEATURES.md), process them:
+
+1. **Read the request carefully** - Understand what features are being asked for
+2. **Find the next feature ID** - Check existing `feature_list.json` for the highest ID
+3. **Generate feature entries** - Create proper entries for each requested feature:
+   ```json
+   {
+     "id": "F0XX",
+     "category": "functional|style|accessibility|performance",
+     "description": "Clear description from request",
+     "testSteps": [
+       "Step 1: Navigate to...",
+       "Step 2: Perform action...",
+       "Step 3: Verify result..."
+     ],
+     "passes": false
+   }
+   ```
+4. **Update feature_list.json** - Append new features (NEVER remove existing ones)
+5. **Update metadata** - Increment `totalFeatures`, update `lastUpdated`
+6. **Mark request as ADDED** in the request file:
+   ```markdown
+   ## Status: ADDED TO FEATURE LIST ✓
+
+   Added as features: F046, F047, F048
+   Total new features: 3
+   Implementation will begin this session.
+   ```
+7. **Commit the updated feature list** before implementing:
+   ```bash
+   git add feature_list.json FEATURE_REQUEST.md
+   git commit -m "Add requested features F046-F048 to feature list"
+   ```
+8. **Implement the new features** - Follow Steps 4-9 for each
+9. **Mark request as COMPLETED** when all new features pass:
+   ```markdown
+   ## Status: COMPLETED ✓
+
+   All requested features implemented and tested.
+   - F046: ✓ Passes
+   - F047: ✓ Passes
+   - F048: ✓ Passes
+   ```
 
 ### Step 4: Select Next Feature
 
@@ -158,12 +210,13 @@ Before the session ends:
 
 ## Critical Constraints
 
-1. **Bugs before features** - Fix all reported bugs before implementing new features
+1. **Priority order** - Bugs → Feature requests → Incomplete features (in that order)
 2. **One feature at a time** - Complete one feature thoroughly rather than partially completing multiple
 3. **UI testing required** - Do not rely solely on API/curl testing; use Puppeteer for real browser verification
 4. **Visual verification** - Take screenshots to confirm visual appearance
 5. **Zero console errors** - Check browser console for JavaScript errors
-6. **Immutable feature list** - Only change the `passes` field, never remove or modify features
+6. **Append-only feature list** - Only append new features or change `passes` to true; never remove features
+7. **Commit before implement** - When adding new features from requests, commit the updated feature_list.json first
 
 ## Troubleshooting
 
@@ -176,9 +229,10 @@ Before the session ends:
 
 At the end of each session, note:
 - Bugs fixed this session (if any)
+- Feature requests processed (new features added)
 - Features completed this session
 - Current passing/total ratio
 - Blockers for next session
 - Recommended next features
 
-Remember: Quality over quantity. A fully working, tested feature is better than multiple broken ones. Always fix bugs before adding new features.
+Remember: Quality over quantity. A fully working, tested feature is better than multiple broken ones. Always follow the priority order: bugs → feature requests → incomplete features.
