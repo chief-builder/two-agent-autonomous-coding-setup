@@ -6,7 +6,7 @@
  * 2. Coding Agent (Sessions 2+): Implements features and marks them as passing
  */
 
-import { mkdir, copyFile, access } from 'node:fs/promises';
+import { mkdir, copyFile, access, readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { query, type SDKMessage } from '@anthropic-ai/claude-agent-sdk';
 import { createClientOptions, initializeProjectSettings, isBashCommandAllowed } from './client.js';
@@ -51,6 +51,67 @@ async function exists(path: string): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+/**
+ * Check if a file contains pending work (not marked as COMPLETED or FIXED)
+ */
+async function hasPendingWork(filePath: string): Promise<boolean> {
+  try {
+    const content = await readFile(filePath, 'utf-8');
+    const upperContent = content.toUpperCase();
+
+    // Check if the file is marked as completed/fixed
+    if (upperContent.includes('STATUS: COMPLETED') ||
+        upperContent.includes('STATUS: FIXED') ||
+        upperContent.includes('✓ COMPLETED') ||
+        upperContent.includes('✓ FIXED')) {
+      return false; // No pending work
+    }
+
+    // File exists and is not marked complete - there's pending work
+    return true;
+  } catch {
+    return false; // File doesn't exist
+  }
+}
+
+/**
+ * Check for pending bug reports or feature requests
+ */
+async function checkPendingWorkFiles(projectDir: string): Promise<{
+  hasBugs: boolean;
+  hasFeatures: boolean;
+  bugFile?: string;
+  featureFile?: string;
+}> {
+  const bugFiles = ['BUG_REPORT.md', 'BUGS.md'];
+  const featureFiles = ['FEATURE_REQUEST.md', 'FEATURES.md'];
+
+  let hasBugs = false;
+  let hasFeatures = false;
+  let bugFile: string | undefined;
+  let featureFile: string | undefined;
+
+  for (const file of bugFiles) {
+    const filePath = join(projectDir, file);
+    if (await hasPendingWork(filePath)) {
+      hasBugs = true;
+      bugFile = file;
+      break;
+    }
+  }
+
+  for (const file of featureFiles) {
+    const filePath = join(projectDir, file);
+    if (await hasPendingWork(filePath)) {
+      hasFeatures = true;
+      featureFile = file;
+      break;
+    }
+  }
+
+  return { hasBugs, hasFeatures, bugFile, featureFile };
 }
 
 /**
@@ -224,11 +285,23 @@ export async function runAutonomousAgent(config: AgentConfig): Promise<void> {
       break;
     }
 
-    // Check if all tests are passing
+    // Check if all tests are passing AND no pending work exists
     const { passing, total } = await countPassingTests(absoluteProjectDir);
+    const pendingWork = await checkPendingWorkFiles(absoluteProjectDir);
+
     if (total > 0 && passing === total) {
-      printCompletionMessage();
-      break;
+      // All tests pass - but check for pending bug reports or feature requests
+      if (pendingWork.hasBugs) {
+        printInfo(`Found pending bug report: ${pendingWork.bugFile}`);
+        printInfo('Running coding agent to fix bugs...');
+      } else if (pendingWork.hasFeatures) {
+        printInfo(`Found pending feature request: ${pendingWork.featureFile}`);
+        printInfo('Running coding agent to add features...');
+      } else {
+        // Truly complete - no pending work
+        printCompletionMessage();
+        break;
+      }
     }
 
     // Print session header
