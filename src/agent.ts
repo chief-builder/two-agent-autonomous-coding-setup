@@ -22,6 +22,7 @@ import {
 import {
   loadInitializerPrompt,
   loadCodingPrompt,
+  loadEnhancerPrompt,
   getPromptPath,
 } from './prompts.js';
 import type { AgentConfig, SessionResult } from './types.js';
@@ -263,17 +264,38 @@ async function isFirstRun(projectDir: string): Promise<boolean> {
  * 2. Subsequent sessions: Run coding agent to implement features
  */
 export async function runAutonomousAgent(config: AgentConfig): Promise<void> {
-  const { projectDir, model, maxIterations, specFile } = config;
+  const { projectDir, model, maxIterations, specFile, enhanceMode } = config;
   const absoluteProjectDir = resolve(projectDir);
 
   let sessionNum = 1;
   let isFirstSession = await isFirstRun(absoluteProjectDir);
+  let runEnhancer = false;
 
-  // Initialize project on first run
-  if (isFirstSession) {
+  // Handle enhancement mode
+  if (enhanceMode) {
+    if (isFirstSession) {
+      printWarning('Enhancement mode requires an existing project with feature_list.json');
+      printInfo('Run without --enhance first to initialize the project');
+      return;
+    }
+
+    // Copy enhancement spec to project directory
+    if (specFile && await exists(specFile)) {
+      const enhancementSpecDest = join(absoluteProjectDir, 'enhancement_spec.txt');
+      await copyFile(specFile, enhancementSpecDest);
+      printInfo(`Copied enhancement spec to ${enhancementSpecDest}`);
+      runEnhancer = true;
+    } else {
+      printWarning('Enhancement mode requires a valid --spec file');
+      return;
+    }
+  }
+
+  // Initialize project on first run (non-enhancement mode)
+  if (isFirstSession && !enhanceMode) {
     printInfo('Initializing new project...');
     await initializeProject(absoluteProjectDir, specFile);
-  } else {
+  } else if (!enhanceMode) {
     printInfo('Resuming existing project...');
   }
 
@@ -304,17 +326,30 @@ export async function runAutonomousAgent(config: AgentConfig): Promise<void> {
       }
     }
 
+    // Determine session type
+    let sessionType: 'initializer' | 'enhancer' | 'coding';
+    if (runEnhancer) {
+      sessionType = 'enhancer';
+    } else if (isFirstSession && sessionNum === 1) {
+      sessionType = 'initializer';
+    } else {
+      sessionType = 'coding';
+    }
+
     // Print session header
-    const isInitializer = isFirstSession && sessionNum === 1;
-    printSessionHeader(sessionNum, isInitializer);
+    printSessionHeader(sessionNum, sessionType);
 
     // Print current progress
     await printProgressSummary(absoluteProjectDir);
 
     // Load the appropriate prompt
     let prompt: string;
+
     try {
-      if (isInitializer) {
+      if (sessionType === 'enhancer') {
+        prompt = await loadEnhancerPrompt();
+        printInfo('Running enhancer agent to add features...');
+      } else if (sessionType === 'initializer') {
         prompt = await loadInitializerPrompt();
         printInfo('Running initializer agent (this may take 10-20+ minutes)...');
       } else {
@@ -342,9 +377,12 @@ export async function runAutonomousAgent(config: AgentConfig): Promise<void> {
       break;
     }
 
-    // After first session, mark initializer as done
-    if (isInitializer) {
+    // After first session, mark initializer/enhancer as done
+    if (sessionType === 'initializer') {
       isFirstSession = false;
+    }
+    if (sessionType === 'enhancer') {
+      runEnhancer = false; // Switch to coding mode for subsequent sessions
     }
 
     // Increment session counter

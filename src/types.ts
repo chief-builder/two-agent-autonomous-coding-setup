@@ -31,6 +31,7 @@ export interface AgentConfig {
   model: string;
   maxIterations?: number;
   specFile?: string;
+  enhanceMode?: boolean;
 }
 
 export interface SessionResult {

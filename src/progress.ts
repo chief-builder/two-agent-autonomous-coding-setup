@@ -48,14 +48,28 @@ export async function countPassingTests(projectDir: string): Promise<ProgressInf
 /**
  * Print a formatted session header
  */
-export function printSessionHeader(sessionNum: number, isInitializer: boolean): void {
-  const sessionType = isInitializer ? 'INITIALIZER' : 'CODING AGENT';
-  const sessionColor = isInitializer ? colors.magenta : colors.cyan;
+export function printSessionHeader(
+  sessionNum: number,
+  sessionType: 'initializer' | 'enhancer' | 'coding' = 'coding'
+): void {
+  const typeLabels: Record<string, string> = {
+    initializer: 'INITIALIZER',
+    enhancer: 'ENHANCER',
+    coding: 'CODING AGENT',
+  };
+  const typeColors: Record<string, string> = {
+    initializer: colors.magenta,
+    enhancer: colors.yellow,
+    coding: colors.cyan,
+  };
+
+  const label = typeLabels[sessionType];
+  const color = typeColors[sessionType];
 
   console.log();
   console.log(`${colors.bold}${'='.repeat(60)}${colors.reset}`);
   console.log(
-    `${colors.bold}${sessionColor}  SESSION ${sessionNum}: ${sessionType}${colors.reset}`
+    `${colors.bold}${color}  SESSION ${sessionNum}: ${label}${colors.reset}`
   );
   console.log(`${colors.bold}${'='.repeat(60)}${colors.reset}`);
   console.log();

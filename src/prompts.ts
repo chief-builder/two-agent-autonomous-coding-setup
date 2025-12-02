@@ -56,6 +56,13 @@ export async function loadCodingPrompt(): Promise<string> {
 }
 
 /**
+ * Load the enhancer prompt for adding features to existing projects
+ */
+export async function loadEnhancerPrompt(): Promise<string> {
+  return loadPrompt('enhancer_prompt.md');
+}
+
+/**
  * Load the application specification
  */
 export async function loadAppSpec(): Promise<string> {

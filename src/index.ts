@@ -35,6 +35,7 @@ interface CLIArgs {
   maxIterations?: number;
   model: string;
   specFile?: string;
+  enhance?: boolean;
 }
 
 /**
@@ -78,6 +79,10 @@ function parseArgs(): CLIArgs {
       '-s, --spec <path>',
       'Path to custom app specification file (default: prompts/app_spec.txt)'
     )
+    .option(
+      '-e, --enhance',
+      'Run in enhancement mode: add features to existing project from spec file'
+    )
     .parse();
 
   const options = program.opts();
@@ -87,6 +92,7 @@ function parseArgs(): CLIArgs {
     maxIterations: options.maxIterations as number | undefined,
     model: options.model as string,
     specFile: options.spec as string | undefined,
+    enhance: options.enhance as boolean | undefined,
   };
 }
 
@@ -188,8 +194,16 @@ async function main(): Promise<void> {
   if (args.maxIterations) {
     printInfo(`Max iterations: ${args.maxIterations}`);
   }
+  if (args.enhance) {
+    printInfo(`Mode: Enhancement (adding features to existing project)`);
+    if (!specFile) {
+      printWarning('Enhancement mode requires --spec flag with enhancement spec file');
+      printInfo('Example: npm run dev -- -p ./my-app --enhance --spec prompts/enhancement_spec.txt');
+      process.exit(1);
+    }
+  }
   if (specFile) {
-    printInfo(`App spec: ${specFile}`);
+    printInfo(`Spec file: ${specFile}`);
   }
   console.log();
 
@@ -200,6 +214,7 @@ async function main(): Promise<void> {
       model: args.model,
       maxIterations: args.maxIterations,
       specFile,
+      enhanceMode: args.enhance,
     });
   } catch (error) {
     if (error instanceof Error && error.message.includes('SIGINT')) {
