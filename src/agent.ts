@@ -308,21 +308,24 @@ export async function runAutonomousAgent(config: AgentConfig): Promise<void> {
     }
 
     // Check if all tests are passing AND no pending work exists
-    const { passing, total } = await countPassingTests(absoluteProjectDir);
-    const pendingWork = await checkPendingWorkFiles(absoluteProjectDir);
+    // Skip this check if we need to run the enhancer first
+    if (!runEnhancer) {
+      const { passing, total } = await countPassingTests(absoluteProjectDir);
+      const pendingWork = await checkPendingWorkFiles(absoluteProjectDir);
 
-    if (total > 0 && passing === total) {
-      // All tests pass - but check for pending bug reports or feature requests
-      if (pendingWork.hasBugs) {
-        printInfo(`Found pending bug report: ${pendingWork.bugFile}`);
-        printInfo('Running coding agent to fix bugs...');
-      } else if (pendingWork.hasFeatures) {
-        printInfo(`Found pending feature request: ${pendingWork.featureFile}`);
-        printInfo('Running coding agent to add features...');
-      } else {
-        // Truly complete - no pending work
-        printCompletionMessage();
-        break;
+      if (total > 0 && passing === total) {
+        // All tests pass - but check for pending bug reports or feature requests
+        if (pendingWork.hasBugs) {
+          printInfo(`Found pending bug report: ${pendingWork.bugFile}`);
+          printInfo('Running coding agent to fix bugs...');
+        } else if (pendingWork.hasFeatures) {
+          printInfo(`Found pending feature request: ${pendingWork.featureFile}`);
+          printInfo('Running coding agent to add features...');
+        } else {
+          // Truly complete - no pending work
+          printCompletionMessage();
+          break;
+        }
       }
     }
 
